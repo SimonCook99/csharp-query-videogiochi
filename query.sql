@@ -137,15 +137,16 @@
 	ON award_videogame.videogame_id = videogames.id
 -- 
 -- 6- Selezionare categorie e classificazioni PEGI dei videogiochi che hanno ricevuto recensioni da 4 e 5 stelle, mostrandole una sola volta (3363)
-	SELECT DISTINCT categories.name, pegi_labels.name, videogames.name
-	FROM categories, pegi_labels, videogames
+	
+	SELECT DISTINCT categories.name, pegi_labels.name
+	FROM categories, pegi_labels
 	INNER JOIN pegi_label_videogame
 	ON pegi_label_videogame.pegi_label_id = pegi_labels.id
 	INNER JOIN videogames
 	ON pegi_label_videogame.videogame_id = videogames.id
 	INNER JOIN reviews
 	ON reviews.videogame_id = videogames.id
-	WHERE reviews.rating <= 4;
+	WHERE reviews.rating >= 4;
 	
 --
 
@@ -174,7 +175,7 @@
 	WHERE award_videogame.year = '2018';
 -- 
 -- 9- Selezionare i giocatori che hanno giocato al gioco più atteso del 2018 in un torneo del 2019 (3306)
-	SELECT DISTINCT players.name, players.lastname, players.nickname, players.city
+	SELECT players.name, players.lastname, players.nickname, players.city
 	FROM players
 	INNER JOIN player_tournament
 	ON player_tournament.player_id = players.id
