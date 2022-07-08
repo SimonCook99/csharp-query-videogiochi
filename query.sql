@@ -88,33 +88,107 @@
 	GROUP BY device_id;
 -- 
 -- 6- Ordinare i videogame in base alla media delle recensioni (del videogioco vogliamo solo l'ID) (500)
-	--SELECT videogame_id
-	--FROM reviews
-	--GROUP BY rating
-	--ORDER BY rating ASC;
+	SELECT videogame_id, AVG(rating)
+	FROM reviews
+	GROUP BY videogame_id
+	ORDER BY AVG(rating) ASC;
 -- ```
 -- 
 -- ------ Query con join
 -- 
 -- ```
 -- 1- Selezionare i dati di tutti giocatori che hanno scritto almeno una recensione, mostrandoli una sola volta (996)
+	SELECT DISTINCT players.*
+	FROM players
+	INNER JOIN reviews
+	ON reviews.player_id = players.id
 -- 
 -- 2- Sezionare tutti i videogame dei tornei tenuti nel 2016, mostrandoli una sola volta (226)
+	SELECT DISTINCT videogames.id as id_videogame, videogames.name
+	FROM videogames
+	INNER JOIN tournament_videogame
+	ON tournament_videogame.videogame_id = videogames.id
+	INNER JOIN tournaments
+	ON tournament_videogame.tournament_id = tournaments.id
+	WHERE tournaments.year = '2016'
 -- 
--- 3- Mostrare le categorie di ogni videogioco
--- SELECT v.id AS videogame_id, v.name AS videogame_name, v.release_date, c.id AS category_id, c.name AS category_name (1718)
+-- 3- Mostrare le categorie di ogni videogioco (1718)
+	--SELECT v.id AS videogame_id, v.name AS videogame_name, v.release_date, c.id AS category_id, c.name AS category_name 
+	SELECT categories.name, videogames.name
+	FROM categories
+	INNER JOIN category_videogame
+	ON category_videogame.category_id = categories.id
+	INNER JOIN videogames
+	ON category_videogame.videogame_id = videogames.id
 -- 
 -- 4- Selezionare i dati di tutte le software house che hanno rilasciato almeno un gioco dopo il 2020, mostrandoli una sola volta (6)
+	SELECT DISTINCT software_houses.name
+	FROM software_houses
+	INNER JOIN videogames
+	ON videogames.software_house_id = software_houses.id
+	WHERE YEAR(videogames.release_date) = '2021';
 -- 
 -- 5- Selezionare i premi ricevuti da ogni software house per i videogiochi che ha prodotto (55)
+	SELECT awards.name, videogames.name
+	FROM awards
+	INNER JOIN award_videogame
+	ON award_videogame.award_id = awards.id
+	INNER JOIN videogames
+	ON award_videogame.videogame_id = videogames.id
 -- 
 -- 6- Selezionare categorie e classificazioni PEGI dei videogiochi che hanno ricevuto recensioni da 4 e 5 stelle, mostrandole una sola volta (3363)
--- 
+	SELECT DISTINCT categories.name, pegi_labels.name, videogames.name
+	FROM categories, pegi_labels, videogames
+	INNER JOIN pegi_label_videogame
+	ON pegi_label_videogame.pegi_label_id = pegi_labels.id
+	INNER JOIN videogames
+	ON pegi_label_videogame.videogame_id = videogames.id
+	INNER JOIN reviews
+	ON reviews.videogame_id = videogames.id
+	WHERE reviews.rating <= 4;
+	
+--
+
 -- 7- Selezionare quali giochi erano presenti nei tornei nei quali hanno partecipato i giocatori il cui nome inizia per 'S' (474)
+	SELECT DISTINCT videogames.name
+	FROM videogames
+	INNER JOIN tournament_videogame
+	ON tournament_videogame.videogame_id = videogames.id
+	INNER JOIN tournaments
+	ON tournament_videogame.tournament_id = tournaments.id
+	INNER JOIN player_tournament
+	ON player_tournament.tournament_id = tournaments.id
+	INNER JOIN players
+	ON player_tournament.player_id = players.id
+	WHERE players.name LIKE 'S%';
 -- 
 -- 8- Selezionare le città in cui è stato giocato il gioco dell'anno del 2018 (36)
+	SELECT DISTINCT tournaments.city
+	FROM tournaments
+	INNER JOIN tournament_videogame
+	ON tournament_videogame.tournament_id = tournaments.id
+	INNER JOIN videogames
+	ON tournament_videogame.videogame_id = videogames.id
+	INNER JOIN award_videogame
+	ON award_videogame.videogame_id = videogames.id
+	WHERE award_videogame.year = '2018';
 -- 
 -- 9- Selezionare i giocatori che hanno giocato al gioco più atteso del 2018 in un torneo del 2019 (3306)
+	SELECT DISTINCT players.name, players.lastname, players.nickname, players.city
+	FROM players
+	INNER JOIN player_tournament
+	ON player_tournament.player_id = players.id
+	INNER JOIN tournaments
+	ON player_tournament.tournament_id = tournaments.id
+	INNER JOIN tournament_videogame
+	ON tournament_videogame.tournament_id = tournaments.id
+	INNER JOIN videogames
+	ON tournament_videogame.videogame_id = videogames.id
+	INNER JOIN award_videogame
+	ON award_videogame.videogame_id = videogames.id
+	INNER JOIN awards
+	ON award_videogame.award_id = awards.id
+	WHERE award_videogame.year = '2018' AND awards.name = 'Gioco più atteso' AND tournaments.year = '2019';
 -- 
 -- *********** BONUS ***********
 -- 
